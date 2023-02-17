@@ -6,22 +6,30 @@ void init_curses() {
     cbreak();
     noecho();
     start_color();
+    init_pair(1, COLOR_BLACK, COLOR_WHITE);
     // culori
 }
 
 /* 
     functia primeste numele fisierului si un int
-    (0 daca fisierul a fost salvat sau 1 daca a
-    fost modificat)
+    (0 daca fisierul nu a fost modificat, 1 daca a
+    fost modificat sau 2 daca a fost salvat)
 */
 void print_header(char filename[], int state) {
     WINDOW *header = newwin(1, COLS, 0, 0);
-    wprintw(header, "%s", filename);
+    wattron(header, COLOR_PAIR(1));
+
+    // coloram in alb tot headerul
+    for(int i = 0; i < COLS; i++) {
+        wprintw(header, " ");
+    }
+    mvwprintw(header, 0, 0, "%s", filename);
     if(state == 1) {
         wprintw(header, "*");
-    } else {
-        mvwprintw(header, 0, COLS - 6, "SAVED");
+    } else if(state == 2) {
+        mvwprintw(header, 0, COLS - 5, "SAVED");
     }
+    wattroff(header, COLOR_PAIR(1));
     wrefresh(header);
 }
 
