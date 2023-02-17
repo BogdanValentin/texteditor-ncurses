@@ -1,6 +1,10 @@
 #include <ncurses.h>
 
-
+typedef struct {
+    WINDOW *pad;
+    int lines, cols;
+    int *charsperline;
+} PAD;
 
 void init_curses() {
     initscr();
@@ -26,3 +30,9 @@ void print_header(char filename[], int state) {
     wrefresh(header);
 }
 
+void print_mainwindow(char filename[]) {
+    PAD mainwindow;
+    
+    file_max_lines_and_cols(filename, &mainwindow.lines, &mainwindow.cols);
+    mainwindow.pad = newpad(mainwindow.lines, mainwindow.cols + 1) // +1 pt cursor
+}
