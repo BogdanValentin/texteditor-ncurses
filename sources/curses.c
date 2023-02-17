@@ -1,5 +1,15 @@
 #include <ncurses.h>
 
+
+
+void init_curses() {
+    initscr();
+    cbreak();
+    noecho();
+    start_color();
+    // culori
+}
+
 /* 
     functia primeste numele fisierului si un int
     (0 daca fisierul a fost salvat sau 1 daca a
