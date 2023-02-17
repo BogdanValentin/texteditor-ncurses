@@ -1,4 +1,4 @@
-#include <ncurses.h>
+#include "../headers/calculate.h"
 
 void file_max_lines_and_cols(char filename[], int *lines, int *cols, int **charsperline) {
     int cols_max = 0;
