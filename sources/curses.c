@@ -1,10 +1,5 @@
-#include <ncurses.h>
-
-typedef struct {
-    WINDOW *pad;
-    int lines, cols;
-    int *charsperline;
-} PAD;
+#include "../headers/curses.h"
+#include "../headers/calculate.h"
 
 void init_curses() {
     initscr();
@@ -30,9 +25,18 @@ void print_header(char filename[], int state) {
     wrefresh(header);
 }
 
-void print_mainwindow(char filename[]) {
+void init_mainwindow(char filename[]) {
     PAD mainwindow;
     
-    file_max_lines_and_cols(filename, &mainwindow.lines, &mainwindow.cols);
-    mainwindow.pad = newpad(mainwindow.lines, mainwindow.cols + 1) // +1 pt cursor
+    file_max_lines_and_cols(filename, &mainwindow.lines, &mainwindow.cols, &mainwindow.charsperline);
+    mainwindow.pad = newpad(mainwindow.lines, mainwindow.cols + 1); // +1 pt cursor
+
+    FILE *file = fopen(filename, "rt");
+    char buffer;
+    if(file != NULL) {
+        while(fscanf(file, "%c", &buffer) == 1) {
+            wprintw(mainwindow.pad, "%c", buffer);
+        }
+    }
+    prefresh(mainwindow.pad, 0, 0, 1, 0, LINES - 1, COLS - 1);
 }
