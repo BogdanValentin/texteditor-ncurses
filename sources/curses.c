@@ -69,8 +69,6 @@ void update_mainwindow(PAD *mainwindow) {
         } else if(buffer == KEY_RIGHT && mainwindow->cursor.col < mainwindow->charsperline[mainwindow->cursor.line]) {
             mainwindow->cursor.col++;
         } else if(buffer >= 32 && buffer <= 126) {
-            
-            
             if(mainwindow->cursor.line == line_max(mainwindow->lines, mainwindow->charsperline)) {
                 mainwindow->cols++; // de ce
                 wresize(mainwindow->pad, mainwindow->lines, mainwindow->cols + 1); // de aia
@@ -82,11 +80,11 @@ void update_mainwindow(PAD *mainwindow) {
         } else if(buffer == KEY_BACKSPACE) {
             if(mainwindow->cursor.col > 0) { // pe acelasi rand
                 mainwindow->charsperline[mainwindow->cursor.line]--;
-                winsch(mainwindow->pad, buffer);
+                mvwdelch(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col-- - 1);
             } else {                         // mergem pe randul de sus
 
             }
-        }
+        } 
 
         if(mainwindow->cursor.line > mainwindow->viewport.line + LINES - 2) {
             (mainwindow->viewport.line)++;
