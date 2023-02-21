@@ -84,7 +84,16 @@ void update_mainwindow(PAD *mainwindow) {
             } else {                         // mergem pe randul de sus
 
             }
-        } 
+        } else if(buffer == 330) {
+            if(mainwindow->cursor.col > 0) { // pe acelasi rand
+                mainwindow->charsperline[mainwindow->cursor.line]--;
+                wdelch(mainwindow->pad);
+            } else if(mainwindow->cursor.col == 0) {
+                wdelch(mainwindow->pad);
+            } else {                         // mergem pe randul de sus
+
+            }
+        }
 
         if(mainwindow->cursor.line > mainwindow->viewport.line + LINES - 2) {
             (mainwindow->viewport.line)++;
