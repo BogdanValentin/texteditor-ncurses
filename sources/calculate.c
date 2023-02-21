@@ -33,3 +33,14 @@ void file_max_lines_and_cols(char filename[], int *lines, int *cols, int **chars
 
     }
 }
+
+int line_max(int lines, int charsperline[]) {
+    int max = -1, position;
+    for(int i = 0; i < lines; i++) {
+        if(charsperline[i] > max) {
+            max = charsperline[i];
+            position = i;
+        }
+    }
+    return position;
+}
