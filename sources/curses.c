@@ -11,6 +11,11 @@ void init_curses() {
     // culori
 }
 
+// pt bugul cu ghosting
+void footer(PAD mainwindow) {
+    WINDOW *footer = newwin(LINES - mainwindow.lines, COLS, mainwindow.lines, 0);
+    wrefresh(footer);
+}
 /* 
     functia primeste numele fisierului si un int
     (0 daca fisierul nu a fost modificat, 1 daca a
@@ -81,17 +86,42 @@ void update_mainwindow(PAD *mainwindow) {
             if(mainwindow->cursor.col > 0) { // pe acelasi rand
                 mainwindow->charsperline[mainwindow->cursor.line]--;
                 mvwdelch(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col-- - 1);
-            } else {                         // mergem pe randul de sus
-
+            } else if(mainwindow->cursor.line > 0){                         // mergem pe randul de sus  // daca nu e primul rand
+                // creare vector cu elementele randului
+                char *line_contents = malloc((mainwindow->charsperline[mainwindow->cursor.line] + 1) * sizeof(char));
+                int nr_elem = mainwindow->charsperline[mainwindow->cursor.line] + 1;
+                winnstr(mainwindow->pad, line_contents, nr_elem);
+                line_contents[nr_elem - 1] = '\0';
+                for(int i = mainwindow->cursor.line; i < mainwindow->lines - 1; i++) {
+                    mainwindow->charsperline[i] = mainwindow->charsperline[i + 1];
+                }
+                mainwindow->lines--;
+                prefresh(mainwindow->pad, mainwindow->viewport.line, mainwindow->viewport.col, 1, 0, LINES - 1, COLS - 1);
+                mainwindow->charsperline = realloc(mainwindow->charsperline, mainwindow->lines * sizeof(int));
+                wmove(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col);
+                wdeleteln(mainwindow->pad);
+                mainwindow->cursor.line--;
+                mainwindow->cursor.col = mainwindow->charsperline[mainwindow->cursor.line];
+                // daca linia de mai sus e cea mai mare din pad
+                if(mainwindow->charsperline[line_max(mainwindow->lines, mainwindow->charsperline)] < 
+                   mainwindow->charsperline[mainwindow->cursor.line] + nr_elem) {
+                    mainwindow->cols += nr_elem;
+                    wresize(mainwindow->pad, mainwindow->lines, mainwindow->cols);
+                    mainwindow->viewport.col = mainwindow->cols - COLS - 1;
+                    footer(*mainwindow);
+                }
+                wmove(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col);
+                wprintw(mainwindow->pad, "%s", line_contents);
+                mainwindow->charsperline[mainwindow->cursor.line] += nr_elem - 1;
             }
-        } else if(buffer == 330) {
+        } else if(buffer == 330) { // tasta delete
             if(mainwindow->cursor.col > 0) { // pe acelasi rand
                 mainwindow->charsperline[mainwindow->cursor.line]--;
                 wdelch(mainwindow->pad);
             } else if(mainwindow->cursor.col == 0) {
                 wdelch(mainwindow->pad);
             } else {                         // mergem pe randul de sus
-
+                
             }
         }
 
