@@ -81,7 +81,20 @@ void update_mainwindow(PAD *mainwindow) {
             winsch(mainwindow->pad, buffer);
             mainwindow->charsperline[mainwindow->cursor.line]++;
             mainwindow->cursor.col++;
-           
+        } else if(buffer == 10) { // tasta enter
+            // la sfarsitul randului
+            if(mainwindow->cursor.col == mainwindow->charsperline[mainwindow->cursor.line]) {
+                mainwindow->lines++;
+                wresize(mainwindow->pad, mainwindow->lines, mainwindow->cols);
+                mainwindow->cursor.line++;
+                mainwindow->cursor.col = 0;
+                wmove(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col);
+                for(int i = mainwindow->lines - 1; i > mainwindow->cursor.line; i--) {
+                    mainwindow->charsperline[i] = mainwindow->charsperline[i - 1];
+                }
+                winsertln(mainwindow->pad);
+                // to do sf de fisier
+            }
         } else if(buffer == KEY_BACKSPACE) {
             if(mainwindow->cursor.col > 0) { // pe acelasi rand
                 mainwindow->charsperline[mainwindow->cursor.line]--;
