@@ -60,7 +60,7 @@ void init_mainwindow(PAD *mainwindow, char filename[]) {
     prefresh(mainwindow->pad, mainwindow->viewport.line, mainwindow->viewport.col, 1, 0, LINES - 1, COLS - 1);
 }
 
-void update_mainwindow(PAD *mainwindow) {
+void update_mainwindow(PAD *mainwindow, char filename[]) {
     int buffer;
     while (1) {
         buffer = wgetch(mainwindow->pad);
@@ -86,12 +86,16 @@ void update_mainwindow(PAD *mainwindow) {
             if(mainwindow->cursor.col == mainwindow->charsperline[mainwindow->cursor.line]) {
                 mainwindow->lines++;
                 wresize(mainwindow->pad, mainwindow->lines, mainwindow->cols);
+                
                 mainwindow->cursor.line++;
                 mainwindow->cursor.col = 0;
+                
                 wmove(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col);
-                for(int i = mainwindow->lines - 1; i > mainwindow->cursor.line; i--) {
+                int i;
+                for(i = mainwindow->lines - 1; i > mainwindow->cursor.line; i--) {
                     mainwindow->charsperline[i] = mainwindow->charsperline[i - 1];
                 }
+                mainwindow->charsperline[i] = 0;
                 winsertln(mainwindow->pad);
                 // to do sf de fisier
             }
@@ -133,10 +137,8 @@ void update_mainwindow(PAD *mainwindow) {
                 wdelch(mainwindow->pad);
             } else if(mainwindow->cursor.col == 0) {
                 wdelch(mainwindow->pad);
-            } else {                         // mergem pe randul de sus
-                
             }
-        }
+        } 
 
         if(mainwindow->cursor.line > mainwindow->viewport.line + LINES - 2) {
             (mainwindow->viewport.line)++;
