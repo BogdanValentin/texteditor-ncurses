@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 
     PAD mainwindow;
     init_mainwindow(&mainwindow, argv[1]);
-    update_mainwindow(&mainwindow);
+    update_mainwindow(&mainwindow, argv[1]);
 
     
     endwin();

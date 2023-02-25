@@ -17,4 +17,4 @@ typedef struct {
 void init_curses();
 void print_header(char filename[], int state);
 void init_mainwindow(PAD *mainwindow, char filename[]);
-void update_mainwindow(PAD *mainwindow);
+void update_mainwindow(PAD *mainwindow, char filename[]);

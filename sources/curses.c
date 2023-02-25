@@ -56,13 +56,14 @@ void init_mainwindow(PAD *mainwindow, char filename[]) {
             wprintw(mainwindow->pad, "%c", buffer);
         }
     }
-    wmove(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col); // muta cursorul la inceputul ecranului
-    prefresh(mainwindow->pad, mainwindow->viewport.line, mainwindow->viewport.col, 1, 0, LINES - 1, COLS - 1);
 }
 
 void update_mainwindow(PAD *mainwindow, char filename[]) {
     int buffer;
     while (1) {
+        wmove(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col);
+        prefresh(mainwindow->pad, mainwindow->viewport.line, mainwindow->viewport.col, 1, 0, LINES - 1, COLS - 1);
+
         buffer = wgetch(mainwindow->pad);
 
         if(buffer == KEY_UP && mainwindow->cursor.line > 0) {
@@ -132,13 +133,31 @@ void update_mainwindow(PAD *mainwindow, char filename[]) {
                 mainwindow->charsperline[mainwindow->cursor.line] += nr_elem - 1;
             }
         } else if(buffer == 330) { // tasta delete
-            if(mainwindow->cursor.col > 0) { // pe acelasi rand
+            if(mainwindow->cursor.col >= 0) { // pe acelasi rand
                 mainwindow->charsperline[mainwindow->cursor.line]--;
                 wdelch(mainwindow->pad);
-            } else if(mainwindow->cursor.col == 0) {
-                wdelch(mainwindow->pad);
+            } 
+        } else if(buffer == 1) { // CTRL + A aka save
+            FILE *file = fopen(filename, "wt");
+            if(file != NULL) {
+                for(int i = 0; i < mainwindow->lines; i++) {
+                    char *line_contents = malloc((mainwindow->charsperline[i] + 1) * sizeof(char));
+                    int nr_elem = mainwindow->charsperline[i] + 1;
+                    mvwinnstr(mainwindow->pad, i, 0, line_contents, nr_elem);
+                    line_contents[nr_elem - 1] = '\0';
+                    fprintf(file, "%s", line_contents);
+                    if(i != mainwindow->lines - 1) {
+                        fprintf(file, "\n");
+                    }
+                    free(line_contents);
+                }
             }
-        } 
+            fclose(file);
+            int x = mainwindow->cursor.line, y = mainwindow->cursor.col;
+            init_mainwindow(mainwindow, filename);
+            mainwindow->cursor.line = x;
+            mainwindow->cursor.col = y;
+        }
 
         if(mainwindow->cursor.line > mainwindow->viewport.line + LINES - 2) {
             (mainwindow->viewport.line)++;
@@ -163,7 +182,6 @@ void update_mainwindow(PAD *mainwindow, char filename[]) {
                 (mainwindow->viewport.col)--;
             }
         }
-        wmove(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col);
-        prefresh(mainwindow->pad, mainwindow->viewport.line, mainwindow->viewport.col, 1, 0, LINES - 1, COLS - 1);
+        
     }
 }
