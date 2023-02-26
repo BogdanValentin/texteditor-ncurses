@@ -1,5 +1,5 @@
-#include "../headers/curses.h"
-#include "../headers/calculate.h"
+#include "../include/curses.h"
+#include "../include/calculate.h"
 
 void init_curses() {
     initscr();
@@ -55,7 +55,9 @@ void init_mainwindow(PAD *mainwindow, char filename[]) {
         while(fscanf(file, "%c", &buffer) == 1) {
             wprintw(mainwindow->pad, "%c", buffer);
         }
+        fclose(file);
     }
+    
 }
 
 void update_mainwindow(PAD *mainwindow, char filename[]) {
@@ -151,8 +153,9 @@ void update_mainwindow(PAD *mainwindow, char filename[]) {
                     }
                     free(line_contents);
                 }
+                fclose(file);
             }
-            fclose(file);
+            
             int x = mainwindow->cursor.line, y = mainwindow->cursor.col;
             init_mainwindow(mainwindow, filename);
             mainwindow->cursor.line = x;

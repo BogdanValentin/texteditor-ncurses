@@ -1,4 +1,4 @@
-#include "../headers/curses.h"
+#include "../include/curses.h"
 
 int main(int argc, char *argv[])
 {

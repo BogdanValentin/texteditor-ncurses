@@ -1,4 +1,4 @@
-#include "../headers/calculate.h"
+#include "../include/calculate.h"
 
 void file_max_lines_and_cols(char filename[], int *lines, int *cols, int **charsperline) {
     int cols_max = 0;
@@ -30,8 +30,11 @@ void file_max_lines_and_cols(char filename[], int *lines, int *cols, int **chars
         if(cols_max > 0) { // tratam cazul cu un singur rand
             *cols = cols_max;
         }
-
+        fclose(file);
+    } else {
+        (*charsperline)[0] = 0;
     }
+    
 }
 
 int line_max(int lines, int charsperline[]) {
