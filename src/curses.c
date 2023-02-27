@@ -5,45 +5,39 @@ void init_curses() {
     initscr();
     cbreak();
     noecho();
-    
     start_color();
     init_pair(1, COLOR_BLACK, COLOR_WHITE);
-    // culori
 }
 
-// pt bugul cu ghosting
-void footer(PAD mainwindow) {
-    WINDOW *footer = newwin(LINES - mainwindow.lines, COLS, mainwindow.lines, 0);
-    wrefresh(footer);
-}
-/* 
-    functia primeste numele fisierului si un int
-    (0 daca fisierul nu a fost modificat, 1 daca a
-    fost modificat sau 2 daca a fost salvat)
-*/
+/*  Functia primeste numele fisierului si un int (0 daca fisierul nu a fost modificat, 1
+    daca a fost modificat sau 2 daca a fost salvat) */
 void print_header(char filename[], int state) {
-    WINDOW *header = newwin(1, COLS, 0, 0);
+    WINDOW *header = newwin(HEADER_HEIGHT, COLS, 0, 0);
     wattron(header, COLOR_PAIR(1));
 
-    // coloram in alb tot headerul
     for(int i = 0; i < COLS; i++) {
         wprintw(header, " ");
     }
+
     mvwprintw(header, 0, 0, "%s", filename);
+
     if(state == 1) {
         wprintw(header, "*");
     } else if(state == 2) {
         mvwprintw(header, 0, COLS - 5, "SAVED");
     }
+
     wattroff(header, COLOR_PAIR(1));
     wrefresh(header);
 }
 
+/*  Functia initializeaza ecranul citind din fisierul "filename" tot continutul si afisandu-l*/
 void init_mainwindow(PAD *mainwindow, char filename[]) {
     file_max_lines_and_cols(filename, &(mainwindow->lines), &(mainwindow->cols), &(mainwindow->charsperline));
-    mainwindow->pad = newpad(mainwindow->lines, mainwindow->cols + 1); // +1 pt cursor
+    mainwindow->pad = newpad(mainwindow->lines, mainwindow->cols + 1);
 
     keypad(mainwindow->pad, true);
+
     mainwindow->cursor.line = 0;
     mainwindow->cursor.col = 0;
     mainwindow->viewport.line = 0;
@@ -57,14 +51,14 @@ void init_mainwindow(PAD *mainwindow, char filename[]) {
         }
         fclose(file);
     }
-    
 }
 
+/*  Functia trateaza inputul user-ului in fereastra */
 void update_mainwindow(PAD *mainwindow, char filename[]) {
     int buffer;
     while (1) {
         wmove(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col);
-        prefresh(mainwindow->pad, mainwindow->viewport.line, mainwindow->viewport.col, 1, 0, LINES - 1, COLS - 1);
+        prefresh(mainwindow->pad, mainwindow->viewport.line, mainwindow->viewport.col, HEADER_HEIGHT, 0, LINES - 1, COLS - 1);
 
         buffer = wgetch(mainwindow->pad);
 
@@ -76,15 +70,15 @@ void update_mainwindow(PAD *mainwindow, char filename[]) {
             mainwindow->cursor.col--;
         } else if(buffer == KEY_RIGHT && mainwindow->cursor.col < mainwindow->charsperline[mainwindow->cursor.line]) {
             mainwindow->cursor.col++;
-        } else if(buffer >= 32 && buffer <= 126) {
+        } else if(buffer >= PRINTABLE_CHARS_LOWER_LIMIT && buffer <= PRINTABLE_CHARS_UPPER_LIMIT) {
             if(mainwindow->cursor.line == line_max(mainwindow->lines, mainwindow->charsperline)) {
-                mainwindow->cols++; // de ce
-                wresize(mainwindow->pad, mainwindow->lines, mainwindow->cols + 1); // de aia
+                mainwindow->cols++;
+                wresize(mainwindow->pad, mainwindow->lines, mainwindow->cols + 1);
             }
             winsch(mainwindow->pad, buffer);
             mainwindow->charsperline[mainwindow->cursor.line]++;
             mainwindow->cursor.col++;
-        } else if(buffer == 10) { // tasta enter
+        } else if(buffer == KEY_ENTER) {
             // la sfarsitul randului
             if(mainwindow->cursor.col == mainwindow->charsperline[mainwindow->cursor.line]) {
                 mainwindow->lines++;
@@ -134,12 +128,12 @@ void update_mainwindow(PAD *mainwindow, char filename[]) {
                 wprintw(mainwindow->pad, "%s", line_contents);
                 mainwindow->charsperline[mainwindow->cursor.line] += nr_elem - 1;
             }
-        } else if(buffer == 330) { // tasta delete
+        } else if(buffer == KEY_DELETE) {
             if(mainwindow->cursor.col >= 0) { // pe acelasi rand
                 mainwindow->charsperline[mainwindow->cursor.line]--;
                 wdelch(mainwindow->pad);
             } 
-        } else if(buffer == 1) { // CTRL + A aka save
+        } else if(buffer == KEY_SAVE) {
             FILE *file = fopen(filename, "wt");
             if(file != NULL) {
                 for(int i = 0; i < mainwindow->lines; i++) {
@@ -168,7 +162,6 @@ void update_mainwindow(PAD *mainwindow, char filename[]) {
         if(mainwindow->cursor.line < mainwindow->viewport.line) {
             (mainwindow->viewport.line)--;
         }
-        
         if(mainwindow->cursor.col > mainwindow->viewport.col + COLS - 1) {
             (mainwindow->viewport.col)++;
         }
@@ -179,17 +172,24 @@ void update_mainwindow(PAD *mainwindow, char filename[]) {
         if(buffer == KEY_UP || buffer == KEY_DOWN) {
             if(mainwindow->viewport.col > mainwindow->cursor.col)
                 mainwindow->viewport.col = mainwindow->charsperline[mainwindow->cursor.line] - 1;
-            
         } else {
             if(mainwindow->cursor.col < mainwindow->viewport.col) {
                 (mainwindow->viewport.col)--;
             }
         }
         
-        if(buffer == 1) {
+        if(buffer == KEY_SAVE) {
             print_header(filename, 2);
         } else {
             print_header(filename, 1);
         }
     }
+}
+
+/*  Functia afiseaza o fereastra goala in partea de jos a ecranului. Acesta este
+    folosita din cauza unui bug aparut in momentul in care fisierul contine 
+    mai multe linii decat fereastra si se stergeau linii pana cand */
+void footer(PAD mainwindow) {
+    WINDOW *footer = newwin(LINES - mainwindow.lines, COLS, mainwindow.lines, 0);
+    wrefresh(footer);
 }
