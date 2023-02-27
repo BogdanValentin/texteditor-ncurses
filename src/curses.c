@@ -186,5 +186,10 @@ void update_mainwindow(PAD *mainwindow, char filename[]) {
             }
         }
         
+        if(buffer == 1) {
+            print_header(filename, 2);
+        } else {
+            print_header(filename, 1);
+        }
     }
 }
