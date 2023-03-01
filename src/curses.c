@@ -57,9 +57,12 @@ void init_mainwindow(PAD *mainwindow, char filename[]) {
 void update_mainwindow(PAD *mainwindow, char filename[]) {
     int input_key;
     while (1) {
+        // se asigura ca pozitia cursorului afisat este aceasi cu cea stocata
+        // si ca bucata pe care o vedem din fereastra principala este cea dorita
         wmove(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col);
         prefresh(mainwindow->pad, mainwindow->viewport.line, mainwindow->viewport.col, HEADER_HEIGHT, 0, LINES - 1, COLS - 1);
 
+        // citire tasta introdusa de la tastatura
         input_key = wgetch(mainwindow->pad);
 
         if(input_key == KEY_UP && mainwindow->cursor.line > 0) {
