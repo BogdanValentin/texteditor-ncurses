@@ -3,8 +3,6 @@
 #include <ncurses.h>
 
 #define HEADER_HEIGHT 1
-#define PRINTABLE_CHARS_LOWER_LIMIT 32
-#define PRINTABLE_CHARS_UPPER_LIMIT 126
 
 #define KEY_SAVE 1
 #define KEY_DELETE 330

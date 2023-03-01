@@ -55,30 +55,30 @@ void init_mainwindow(PAD *mainwindow, char filename[]) {
 
 /*  Functia trateaza inputul user-ului in fereastra */
 void update_mainwindow(PAD *mainwindow, char filename[]) {
-    int buffer;
+    int input_key;
     while (1) {
         wmove(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col);
         prefresh(mainwindow->pad, mainwindow->viewport.line, mainwindow->viewport.col, HEADER_HEIGHT, 0, LINES - 1, COLS - 1);
 
-        buffer = wgetch(mainwindow->pad);
+        input_key = wgetch(mainwindow->pad);
 
-        if(buffer == KEY_UP && mainwindow->cursor.line > 0) {
+        if(input_key == KEY_UP && mainwindow->cursor.line > 0) {
             mainwindow->cursor.line--;
-        } else if(buffer == KEY_DOWN && mainwindow->cursor.line < mainwindow->lines - 1) {
+        } else if(input_key == KEY_DOWN && mainwindow->cursor.line < mainwindow->lines - 1) {
             mainwindow->cursor.line++;
-        } else if(buffer == KEY_LEFT && mainwindow->cursor.col > 0) {
+        } else if(input_key == KEY_LEFT && mainwindow->cursor.col > 0) {
             mainwindow->cursor.col--;
-        } else if(buffer == KEY_RIGHT && mainwindow->cursor.col < mainwindow->charsperline[mainwindow->cursor.line]) {
+        } else if(input_key == KEY_RIGHT && mainwindow->cursor.col < mainwindow->charsperline[mainwindow->cursor.line]) {
             mainwindow->cursor.col++;
-        } else if(buffer >= PRINTABLE_CHARS_LOWER_LIMIT && buffer <= PRINTABLE_CHARS_UPPER_LIMIT) {
+        } else if(is_printable_key(input_key)) {
             if(mainwindow->cursor.line == line_max(mainwindow->lines, mainwindow->charsperline)) {
                 mainwindow->cols++;
                 wresize(mainwindow->pad, mainwindow->lines, mainwindow->cols + 1);
             }
-            winsch(mainwindow->pad, buffer);
+            winsch(mainwindow->pad, input_key);
             mainwindow->charsperline[mainwindow->cursor.line]++;
             mainwindow->cursor.col++;
-        } else if(buffer == KEY_ENTER) {
+        } else if(input_key == KEY_ENTER) {
             // la sfarsitul randului
             if(mainwindow->cursor.col == mainwindow->charsperline[mainwindow->cursor.line]) {
                 mainwindow->lines++;
@@ -96,7 +96,7 @@ void update_mainwindow(PAD *mainwindow, char filename[]) {
                 winsertln(mainwindow->pad);
                 // to do sf de fisier
             }
-        } else if(buffer == KEY_BACKSPACE) {
+        } else if(input_key == KEY_BACKSPACE) {
             if(mainwindow->cursor.col > 0) { // pe acelasi rand
                 mainwindow->charsperline[mainwindow->cursor.line]--;
                 mvwdelch(mainwindow->pad, mainwindow->cursor.line, mainwindow->cursor.col-- - 1);
@@ -128,12 +128,12 @@ void update_mainwindow(PAD *mainwindow, char filename[]) {
                 wprintw(mainwindow->pad, "%s", line_contents);
                 mainwindow->charsperline[mainwindow->cursor.line] += nr_elem - 1;
             }
-        } else if(buffer == KEY_DELETE) {
+        } else if(input_key == KEY_DELETE) {
             if(mainwindow->cursor.col >= 0) { // pe acelasi rand
                 mainwindow->charsperline[mainwindow->cursor.line]--;
                 wdelch(mainwindow->pad);
             } 
-        } else if(buffer == KEY_SAVE) {
+        } else if(input_key == KEY_SAVE) {
             FILE *file = fopen(filename, "wt");
             if(file != NULL) {
                 for(int i = 0; i < mainwindow->lines; i++) {
@@ -169,7 +169,7 @@ void update_mainwindow(PAD *mainwindow, char filename[]) {
             mainwindow->cursor.col = mainwindow->charsperline[mainwindow->cursor.line];
         }
         
-        if(buffer == KEY_UP || buffer == KEY_DOWN) {
+        if(input_key == KEY_UP || input_key == KEY_DOWN) {
             if(mainwindow->viewport.col > mainwindow->cursor.col)
                 mainwindow->viewport.col = mainwindow->charsperline[mainwindow->cursor.line] - 1;
         } else {
@@ -178,7 +178,7 @@ void update_mainwindow(PAD *mainwindow, char filename[]) {
             }
         }
         
-        if(buffer == KEY_SAVE) {
+        if(input_key == KEY_SAVE) {
             print_header(filename, 2);
         } else {
             print_header(filename, 1);

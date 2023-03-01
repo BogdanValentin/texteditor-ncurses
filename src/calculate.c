@@ -53,3 +53,11 @@ int line_max(int lines, int charsperline[]) {
     }
     return position;
 }
+
+int is_printable_key(int key) {
+    if(key >= PRINTABLE_CHARS_LOWER_LIMIT && key <= PRINTABLE_CHARS_UPPER_LIMIT) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
